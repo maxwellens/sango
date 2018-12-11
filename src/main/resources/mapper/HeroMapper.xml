@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.game.sango.dao.HeroDao">
+    <resultMap id="BaseResultMap" type="com.game.sango.bean.Hero">
+        <id column="id" property="id" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <select id="findHeroById" resultMap="BaseResultMap" parameterType="java.lang.Integer">
+		select * from hero where id = #{id}
+	</select>
+
+    <select id="findHeros" resultMap="BaseResultMap">
+        select * from hero
+        <if test="start!=null and offset!=null">
+            limit #{start},#{offset}
+        </if>
+    </select>
+
+    <select id="findHerosCount" resultType="java.lang.Integer">
+		select count(1) from hero
+	</select>
+
+    <delete id="deleteHeroById" parameterType="java.lang.Integer">
+		delete from hero where id = #{id}
+	</delete>
+
+    <delete id="deleteHeros" parameterType="string">
+		delete from hero where id in (${_parameter})
+	</delete>
+
+    <insert id="insertHero" parameterType="com.game.sango.bean.Hero">
+		insert into hero (no,name,hp,force,intelligence,loyalty,integrity,exp,soldiers,weapon,armor,type,level,state,end_year,avatar)
+		values	(#{no},#{name}, #{hp},#{force},#{intelligence},#{loyalty},#{integrity},#{exp},#{soldiers},#{weapon},#{armor},#{type},#{level},#{state},#{endYear},#{avatar})
+	</insert>
+
+    <update id="updateHero" parameterType="com.game.sango.bean.Hero">
+		update hero	set
+		no = #{no},
+		name = #{name},
+		hp = #{hp},
+		force = #{force},
+		intelligence = #{intelligence},
+		loyalty = #{loyalty},
+		integrity = #{integrity},
+		exp = #{exp},
+		soldiers = #{soldiers},
+		weapon = #{weapon},
+		type = #{type},
+		level = #{level},
+		state = #{state},
+		end_year = #{endYear},
+		avatar = #{avatar}
+		where id = #{id}
+	</update>
+
+</mapper>

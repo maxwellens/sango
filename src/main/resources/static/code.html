@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+    <link rel="stylesheet" href="layui/css/layui.css">
+    <script>
+
+    </script>
+</head>
+<body>
+<pre class="layui-code">
+package edu.ufl.cise.cs1.controllers;
+
+import game.controllers.AttackerController;
+import game.controllers.DefenderController;
+import game.controllers.example.OriginalDefenders;
+import game.models.Attacker;
+import game.models.Game;
+
+import java.util.List;
+
+/**
+ * @author administrator
+ */
+public class StudentAttackerController implements AttackerController
+{
+    /**
+     * SEARCH_DEPTH = 80 has the best cost performance
+     */
+    private static final int SEARCH_DEPTH = 80;
+    private static final int LIFE_SCORE = 10000;
+    private DefenderController defenderController;
+
+    @Override
+    public void init(Game game)
+    {
+        System.out.println("Init Game....");
+        defenderController = new OriginalDefenders();
+    }
+
+    @Override
+    public int update(Game game, long timeDue)
+    {
+        /**
+         * your final decision
+         */
+        int direction = -1;
+        int maxScore = -1;
+        int[] defenderDirections = defenderController.update(game.copy(), timeDue);
+        Attacker attacker = game.getAttacker();
+        List<Integer> choices = attacker.getPossibleDirs(false);
+        /**
+         * if you have only one choice, you do not need to further search
+         */
+        if (choices.size() == 1)
+        {
+            return choices.get(0);
+        }
+        for (int choice : choices)
+        {
+            Game tryGame = game.copy();
+            tryGame.advanceGame(choice, defenderDirections);
+            int score = getScore(tryGame, timeDue, 0);
+            if (score > maxScore)
+            {
+                maxScore = score;
+                direction = choice;
+            }
+        }
+        return direction;
+    }
+
+    @Override
+    public void shutdown(Game game)
+    {
+        System.out.println("Game has shutdown");
+    }
+
+    /**
+     * Evaluation function of this search node
+     * If this search node is a leaf(level = SEARCH_DEPTH),return game.getScore()+game.getLivesRemaining() * LIFE_SCORE
+     * If this search node is not leaf(level < SEARCH_DEPTH),return max score of its children node
+     *
+     * @param game    game context of the search node
+     * @param timeDue dummy param(we will never use it)
+     * @param level   search level of this search node
+     * @return the score of this search node
+     */
+    private int getScore(Game game, long timeDue, int level)
+    {
+        if (level < SEARCH_DEPTH)
+        {
+            int maxScore = -1;
+            int[] defenderDirs = defenderController.update(game.copy(), timeDue);
+            Attacker attacker = game.getAttacker();
+            List<Integer> choices = attacker.getPossibleDirs(false);
+            for (int choice : choices)
+            {
+                Game tryGame = game.copy();
+                tryGame.advanceGame(choice, defenderDirs);
+                int score = getScore(tryGame, timeDue, level + 1);
+                if (score > maxScore)
+                {
+                    maxScore = score;
+                }
+            }
+            return maxScore;
+        } else
+        {
+            return game.getScore() + game.getLivesRemaining() * LIFE_SCORE;
+        }
+    }
+}
+
+</pre>
+<script src="layui/layui.all.js"></script>
+</body>
+
+</html>
